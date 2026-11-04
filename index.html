@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genomic Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/study.css">
+</head>
+<body>
+<main class="wrap" id="app">
+  <header class="top">
+    <div class="eyebrow">MSc Biology · Leiden University · 27 Oct – 20 Nov 2026</div>
+    <h1>Genomic <em>Architecture</em></h1>
+    <p class="lede">Study hub: one interactive page per lecture (concepts + quiz) and a course-wide exam drill.
+      Final exam: <b>Wed 18 Nov 13:00–16:00, USC</b> (digital, multiple choice + open questions, 75%). Poster + symposium 25%; bioinformatics assignments pass/fail.</p>
+  </header>
+  <div class="bar"><div class="tools"><a class="btn primary" href="exam-drill/index.html" style="text-decoration:none">Exam drill →</a></div><div class="tools" id="theme"></div></div>
+  <div id="weeks"></div>
+  <footer>Coordinator: Han de Winde · Books: Lesk, <i>Introduction to Genomics</i> (3rd ed.); Brock, <i>Biology of Microorganisms</i> (15th ed.); Campbell, <i>Biology</i> (11th/12th ed.)</footer>
+</main>
+<script src="assets/study.js"></script>
+<script>
+// status: "ready" = study page exists; "slides" = folder exists, no study page yet; "soon" = lecture not yet given / no slides.
+const weeks = [
+  ["Week 1 — Genome structure", [
+    ["00", "Basics of Genomics", "Self-study prep · Jo-Anne Verschoor", "00-prep-basics-of-genomics", "ready"],
+    ["01", "Genome Diversity, basis of life", "Tue 27 Oct · Han de Winde", "01-intro-genome-diversity", "ready"],
+    ["02", "Viruses & Phages", "Wed 28 Oct · Adam Sidi Mabrouk", "02-viruses-and-phages", "ready"],
+    ["03", "Bacteria & HGT", "Thu 29 Oct · Astri Kusumawardhani", "03-bacteria-and-hgt", "soon"],
+    ["04", "Tools: sequencing, assembly & sample prep", "Fri 30 Oct · Vriesendorp/Henkel, Ariyurek", "04-tools-sequencing-and-assembly", "ready"],
+  ]],
+  ["Week 2 — Genome structure and function", [
+    ["05", "Genome Comparisons & GWAS", "Mon 2 Nov · Sjoerd Seekles", "05-genome-comparisons-and-gwas", "ready"],
+    ["06", "Bioinformatics workshop & case study", "Tue 3 Nov · Verschoor & Vriesendorp", "", "soon"],
+    ["07", "Genome evolution & taxonomy; Aspergillus", "Wed 4 Nov · Vera van Noort, Arthur Ram", "", "soon"],
+    ["08", "Comparative genomics; yeast", "Thu 5 Nov · Han de Winde", "", "soon"],
+    ["09", "Genome evolution: polyketides & central metabolism", "Fri 6 Nov · Machushynets, de Winde", "", "soon"],
+  ]],
+  ["Week 3 — Genome variation", [
+    ["10", "Genome complexity & metagenomics; wrap-up", "Mon 9 Nov · Paco Barona, de Winde", "", "soon"],
+    ["11", "Sponge microbiomes; Triturus", "Tue 10 Nov · Nicole de Voogd, Ben Wielstra", "", "soon"],
+    ["12", "Plant microbiomes; plant genomes", "Thu 12 Nov · Akos Kovács, guest", "", "soon"],
+    ["13", "Ancient DNA; human genetics & health", "Fri 13 Nov · Eveline Altena, Gerben Voshol", "", "soon"],
+  ]],
+];
+const host = document.getElementById("weeks");
+for (const [w, items] of weeks) {
+  host.insertAdjacentHTML("beforeend", `<h2 class="week">${w}</h2>`);
+  const grid = document.createElement("div"); grid.className = "grid";
+  for (const [n, t, who, dir, st] of items) {
+    const href = st === "ready" ? `${dir}/study.html` : dir ? `${dir}/README.md` : null;
+    grid.insertAdjacentHTML("beforeend",
+      `<${href ? `a href="${href}"` : "div"} class="tile${st === "ready" ? "" : " soon"}">
+        <span class="n">L${n}${st === "ready" ? "" : " · coming"}</span><h3>${t}</h3><p>${who}</p></${href ? "a" : "div"}>`);
+  }
+  host.append(grid);
+}
+document.getElementById("theme").append(GA.themeButton());
+</script>
+</body>
+</html>
