@@ -8,6 +8,15 @@ Course material and study aids for the MSc course **Genomic Architecture** (Leid
 
 > Tip: clone the repo and open the HTML files locally (double-click `index.html`). GitHub shows the HTML source, not the rendered page.
 
+### Just want the study pages? Use `standalone/`
+The pages in the lecture folders need the rest of the repo (`assets/`, `study-content.js`) next to them. The **[standalone/](standalone/)** folder has single-file copies that work on their own: download any `.html` file from it (on GitHub: open the file, then the *Download raw file* button) and double-click it. No VS Code, Git or internet needed (only the fonts need internet; without it the page uses fallback fonts).
+
+- `standalone/NN-….html`: one page per lecture
+- `standalone/exam-drill.html`: all questions
+- `standalone/index.html`: hub. Links between pages work when the files are in the same folder.
+
+Quiz progress is saved in the browser.
+
 ## Assessment
 
 | Part | Weight |

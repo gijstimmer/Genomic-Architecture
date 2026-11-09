@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genomic Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Shared styles for all Genomic Architecture study pages.
+   Layout: one narrow study column; tabs switch between Learn (concept cards) and Quiz. */
+:root {
+  --bg: #eef2f1;
+  --surface: #ffffff;
+  --ink: #17242a;
+  --muted: #5a6a70;
+  --line: #d3dedb;
+  --accent: #1f6f5c;
+  --accent-soft: #d8ece5;
+  --again: #b0521c;
+  --again-soft: #f6e4d8;
+  --good: #2c7a3b;
+  --good-soft: #dcefdf;
+  --hl: #fff3c4;
+  --display: "Newsreader", Georgia, "Times New Roman", serif;
+  --ui: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, "Courier New", monospace;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1517; --surface: #162024; --ink: #e3eaea; --muted: #91a3a6; --line: #28383b;
+    --accent: #62c7a8; --accent-soft: #163a31; --again: #e48d58; --again-soft: #3a2417;
+    --good: #6dc47c; --good-soft: #1b3421; --hl: #3d3514;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1517; --surface: #162024; --ink: #e3eaea; --muted: #91a3a6; --line: #28383b;
+  --accent: #62c7a8; --accent-soft: #163a31; --again: #e48d58; --again-soft: #3a2417;
+  --good: #6dc47c; --good-soft: #1b3421; --hl: #3d3514;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.6 var(--ui);
+  padding: 28px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px));
+}
+.wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 22px; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.crumbs { font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.crumbs a { color: var(--muted); }
+.top { display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(1.9rem, 5vw, 2.6rem)/1.08 var(--display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 em { font-weight: 400; color: var(--accent); }
+.lede { margin: 0; color: var(--muted); max-width: 66ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 500; }
+
+/* tabs */
+.bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 5; border-bottom: 1px solid var(--line); }
+.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.tab { border: 0; background: transparent; padding: 8px 16px; font-weight: 500; }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--surface); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 13px; font-size: 13.5px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+
+/* objectives / take-homes */
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; }
+.box h2 { font: 600 1.15rem/1.2 var(--display); margin: 0 0 8px; }
+.box ul { margin: 0; padding-left: 20px; }
+.box li { margin: 3px 0; }
+
+/* concept sections */
+.section { display: grid; gap: 10px; }
+.section > h2 { font: 600 1.45rem/1.2 var(--display); margin: 14px 0 0; }
+.section > .src { font-size: 12.5px; color: var(--muted); margin-top: -6px; }
+details.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+details.card > summary { list-style: none; padding: 13px 18px; font-weight: 600; display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::before { content: "+"; font: 500 16px/1 var(--mono); color: var(--accent); width: 12px; flex: none; }
+details.card[open] > summary::before { content: "−"; }
+details.card > .body { padding: 0 20px 16px 40px; }
+.body p { margin: 0 0 10px; }
+.body ul, .body ol { margin: 0 0 10px; padding-left: 20px; }
+.body li { margin: 3px 0; }
+.body table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 6px 0 12px; display: block; overflow-x: auto; }
+.body th, .body td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+.body th { background: var(--accent-soft); font-weight: 600; }
+.key { background: var(--hl); padding: 0 3px; border-radius: 3px; }
+.exam { border-left: 3px solid var(--again); background: var(--again-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 14px; margin: 8px 0 4px; }
+.exam::before { content: "Exam tip — "; font-weight: 600; color: var(--again); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.seq { font-family: var(--mono); background: var(--bg); padding: 8px 10px; border-radius: 6px; overflow-x: auto; white-space: pre; font-size: 13px; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 12px; }
+.flow span { background: var(--accent-soft); border-radius: 6px; padding: 4px 9px; font-size: 13px; }
+.flow i { color: var(--muted); font-style: normal; }
+
+/* quiz */
+.qhead { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.score { font: 500 14px var(--mono); color: var(--muted); }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; display: grid; gap: 10px; }
+.q .qn { font: 500 12px var(--mono); color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.q .tag { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 1px 8px; }
+.q .stem { font-weight: 600; }
+.opts { display: grid; gap: 7px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 9px 12px; display: flex; gap: 10px; }
+.opt .l { font: 500 13px var(--mono); color: var(--muted); }
+.opt:hover:not([disabled]) { border-color: var(--accent); }
+.opt[disabled] { cursor: default; }
+.opt.right { border-color: var(--good); background: var(--good-soft); }
+.opt.wrong { border-color: var(--again); background: var(--again-soft); }
+.explain { font-size: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.explain b { color: var(--accent); }
+.open-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.good { border-color: var(--good); color: var(--good); }
+.btn.bad { border-color: var(--again); color: var(--again); }
+textarea { width: 100%; min-height: 70px; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.hidden { display: none !important; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+/* hub */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 6px; text-decoration: none; color: var(--ink); }
+.tile:hover { border-color: var(--accent); }
+.tile .n { font: 500 12px var(--mono); color: var(--accent); }
+.tile h3 { margin: 0; font: 600 1.15rem/1.2 var(--display); }
+.tile p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.tile.soon { opacity: .6; }
+.week { font: 600 1.3rem/1.2 var(--display); margin: 10px 0 0; }
+footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+
+</style>
+</head>
+<body>
+<!-- Generated by tools/build-standalone.js. Do not edit; edit the source files and rebuild. -->
+<main class="wrap" id="app">
+  <header class="top">
+    <div class="eyebrow">MSc Biology · Leiden University · 27 Oct – 20 Nov 2026</div>
+    <h1>Genomic <em>Architecture</em></h1>
+    <p class="lede">Study hub: one interactive page per lecture (concepts + quiz) and a course-wide exam drill.
+      Final exam: <b>Wed 18 Nov 13:00–16:00, USC</b> (digital, multiple choice + open questions, 75%). Poster + symposium 25%; bioinformatics assignments pass/fail.</p>
+  </header>
+  <div class="bar"><div class="tools"><a class="btn primary" href="exam-drill.html" style="text-decoration:none">Exam drill →</a></div><div class="tools" id="theme"></div></div>
+  <div id="weeks"></div>
+  <footer>Coordinator: Han de Winde · Books: Lesk, <i>Introduction to Genomics</i> (3rd ed.); Brock, <i>Biology of Microorganisms</i> (15th ed.); Campbell, <i>Biology</i> (11th/12th ed.)</footer>
+</main>
+<script>
+/* Shared renderer for the Genomic Architecture study pages.
+ *
+ * Each lecture folder has a `study-content.js` that calls GA.register({...}).
+ * A lecture page (study.html) calls GA.lecturePage(id) to render that lecture.
+ * The exam drill (exam-drill/index.html) loads every study-content.js and calls GA.drillPage().
+ *
+ * Content format (see any study-content.js):
+ *   { id, num, title, lecturer, date, slides: [file names], summary,
+ *     objectives: [..], takeHome: [..],
+ *     sections: [{ title, src, cards: [{ t, html }] }],
+ *     questions: [{ type: 'mc', q, options: [..], answer: index, explain, src }
+ *                 | { type: 'open', q, answer, src }] }
+ * html strings may use <span class="key">, <div class="exam">, <div class="seq">, tables, lists.
+ */
+(function () {
+  const GA = (window.GA = window.GA || {});
+  GA.lectures = GA.lectures || [];
+  GA.register = (lec) => GA.lectures.push(lec);
+  // Link targets. The standalone build (tools/build-standalone.js) overrides these
+  // by defining window.GA.links before this script runs.
+  const links = Object.assign({
+    hub: "../index.html",
+    drill: "../exam-drill/index.html",
+    slide: (lec, file) => "slides/" + file,
+  }, GA.links);
+
+  /* ---------- small helpers ---------- */
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const el = (tag, attrs = {}, html) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") n.className = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v);
+    }
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("ga:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("ga:" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+  };
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const qid = (lec, i) => lec.id + ":" + i;
+
+  /* ---------- theme ---------- */
+  function applyTheme() { const t = store.get("theme", null); if (t) document.documentElement.setAttribute("data-theme", t); }
+  function themeButton() {
+    return el("button", { class: "btn", title: "Toggle light/dark", onclick: () => {
+      const cur = document.documentElement.getAttribute("data-theme") ||
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const next = cur === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next); store.set("theme", next);
+    } }, "◐ Theme");
+  }
+  applyTheme();
+
+  /* ---------- quiz rendering (shared by lecture page and drill) ---------- */
+  function renderQuiz(container, items, opts = {}) {
+    // items: [{ lec, i, q }]
+    container.innerHTML = "";
+    const missed = new Set(store.get("missed", []));
+    let answered = 0, correct = 0;
+    const scoreEl = el("div", { class: "score" });
+    const updateScore = () => { scoreEl.textContent = `${correct} / ${answered} correct · ${items.length} questions`; };
+    const head = el("div", { class: "qhead" });
+    head.append(scoreEl);
+    if (opts.controls) head.append(opts.controls);
+    container.append(head);
+    updateScore();
+
+    const record = (key, ok) => {
+      answered++; if (ok) { correct++; missed.delete(key); } else missed.add(key);
+      store.set("missed", [...missed]); updateScore();
+    };
+
+    items.forEach(({ lec, i, q }, n) => {
+      const key = qid(lec, i);
+      const card = el("div", { class: "q" });
+      const meta = [`Q${n + 1}`, q.type === "mc" ? "multiple choice" : "open question"];
+      card.append(el("div", { class: "qn" },
+        meta.map((m) => `<span>${m}</span>`).join("") +
+        (opts.showLecture ? `<span class="tag">L${lec.num} · ${lec.short || lec.title}</span>` : "") +
+        (q.src ? `<span>${q.src}</span>` : "")));
+      card.append(el("div", { class: "stem" }, q.q));
+
+      if (q.type === "mc") {
+        const order = shuffle(q.options.map((o, k) => k));
+        const box = el("div", { class: "opts" });
+        const explain = el("div", { class: "explain hidden" },
+          `<b>Answer:</b> ${q.options[q.answer]}${q.explain ? "<br>" + q.explain : ""}`);
+        order.forEach((k, pos) => {
+          const b = el("button", { class: "opt" }, `<span class="l">${"ABCDEF"[pos]}</span><span>${q.options[k]}</span>`);
+          b.addEventListener("click", () => {
+            box.querySelectorAll(".opt").forEach((x) => (x.disabled = true));
+            b.classList.add(k === q.answer ? "right" : "wrong");
+            box.children[order.indexOf(q.answer)].classList.add("right");
+            explain.classList.remove("hidden");
+            record(key, k === q.answer);
+          });
+          box.append(b);
+        });
+        card.append(box, explain);
+      } else {
+        const ta = el("textarea", { placeholder: "Write your answer first (optional), then reveal the model answer…" });
+        const ans = el("div", { class: "explain hidden" }, `<b>Model answer:</b> ${q.answer}`);
+        const grade = el("div", { class: "open-actions hidden" });
+        const done = (ok) => { grade.innerHTML = `<span class="score">${ok ? "Marked as correct" : "Marked for review"}</span>`; record(key, ok); };
+        grade.append(
+          el("button", { class: "btn good", onclick: () => done(true) }, "✓ I had it"),
+          el("button", { class: "btn bad", onclick: () => done(false) }, "✗ Review again"));
+        const reveal = el("button", { class: "btn", onclick: () => { ans.classList.remove("hidden"); grade.classList.remove("hidden"); reveal.remove(); } }, "Reveal answer");
+        card.append(ta, el("div", { class: "open-actions" }), ans, grade);
+        card.children[3].append(reveal);
+      }
+      container.append(card);
+    });
+  }
+
+  /* ---------- lecture page ---------- */
+  GA.lecturePage = function (id) {
+    const lec = GA.lectures.find((l) => l.id === id);
+    const app = $("#app");
+    document.title = `L${lec.num} ${lec.short || lec.title}`;
+
+    app.append(el("nav", { class: "crumbs" },
+      `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Lecture ${lec.num}</span>`));
+    app.append(el("header", { class: "top" },
+      `<div class="eyebrow">Lecture ${lec.num} · ${lec.date}</div>
+       <h1>${lec.titleHtml || lec.title}</h1>
+       <p class="lede">${lec.summary}</p>
+       <div class="meta"><span><b>Lecturer:</b> ${lec.lecturer}</span>
+       <span><b>Slides:</b> ${lec.slides.map((s) => `<a href="${links.slide(lec, s)}">${s}</a>`).join(", ")}</span></div>`));
+
+    const learn = el("div", { class: "section-wrap", style: "display:grid;gap:18px" });
+    const quiz = el("div", { style: "display:grid;gap:14px" });
+    quiz.classList.add("hidden");
+
+    const tabs = el("div", { class: "tabs", role: "tablist" });
+    const setTab = (which) => {
+      tabs.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.t === which));
+      learn.classList.toggle("hidden", which !== "learn");
+      quiz.classList.toggle("hidden", which !== "quiz");
+      store.set("tab:" + id, which);
+    };
+    [["learn", "Learn"], ["quiz", `Quiz (${lec.questions.length})`]].forEach(([k, label]) =>
+      tabs.append(el("button", { class: "tab", role: "tab", "data-t": k, onclick: () => setTab(k) }, label)));
+    const tools = el("div", { class: "tools" });
+    tools.append(
+      el("button", { class: "btn", onclick: () => learn.querySelectorAll("details").forEach((d) => (d.open = true)) }, "Expand all"),
+      el("button", { class: "btn", onclick: () => learn.querySelectorAll("details").forEach((d) => (d.open = false)) }, "Collapse all"),
+      themeButton());
+    const bar = el("div", { class: "bar" }); bar.append(tabs, tools);
+    app.append(bar);
+
+    // Learn tab
+    if (lec.objectives) learn.append(el("div", { class: "box" }, `<h2>Learning goals</h2><ul>${lec.objectives.map((o) => `<li>${o}</li>`).join("")}</ul>`));
+    lec.sections.forEach((s) => {
+      const sec = el("section", { class: "section" }, `<h2>${s.title}</h2>${s.src ? `<div class="src">${s.src}</div>` : ""}`);
+      s.cards.forEach((c) => {
+        const d = el("details", { class: "card" }, `<summary>${c.t}</summary><div class="body">${c.html}</div>`);
+        sec.append(d);
+      });
+      learn.append(sec);
+    });
+    if (lec.takeHome) learn.append(el("div", { class: "box" }, `<h2>Take-home messages</h2><ul>${lec.takeHome.map((o) => `<li>${o}</li>`).join("")}</ul>`));
+    learn.append(el("div", { style: "text-align:center" }, ""));
+    learn.lastChild.append(el("button", { class: "btn primary", onclick: () => { setTab("quiz"); scrollTo(0, 0); } }, "Test yourself →"));
+
+    // Quiz tab
+    const drawQuiz = (shuffled) => {
+      const items = lec.questions.map((q, i) => ({ lec, i, q }));
+      const controls = el("div", { class: "tools" });
+      controls.append(
+        el("button", { class: "btn", onclick: () => drawQuiz(true) }, "Shuffle & restart"),
+        el("a", { class: "btn", href: links.drill, style: "text-decoration:none" }, "Course-wide drill →"));
+      renderQuiz(quiz, shuffled ? shuffle(items) : items, { controls });
+    };
+    drawQuiz(false);
+
+    app.append(learn, quiz);
+    app.append(el("footer", {}, "Summaries and questions are study aids written from the lecture slides — when in doubt, the slides and the lecture recording are authoritative."));
+    setTab(store.get("tab:" + id, "learn"));
+  };
+
+  /* ---------- exam drill ---------- */
+  GA.drillPage = function () {
+    const app = $("#app");
+    const lecs = GA.lectures.slice().sort((a, b) => a.num.localeCompare(b.num));
+    const all = lecs.flatMap((lec) => lec.questions.map((q, i) => ({ lec, i, q })));
+    const sel = new Set(store.get("drill:sel", lecs.map((l) => l.id)));
+    let type = "all", size = 20, mode = "random";
+
+    app.append(el("nav", { class: "crumbs" }, `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Exam drill</span>`));
+    app.append(el("header", { class: "top" },
+      `<div class="eyebrow">Course-wide practice</div><h1>Exam <em>drill</em></h1>
+       <p class="lede">Mixed questions from every lecture, like the final exam (multiple choice + open questions).
+       Pick the lectures, draw a set, and use “Missed only” to repeat what you got wrong — your misses are remembered in this browser.</p>`));
+
+    const panel = el("div", { class: "box", style: "display:grid;gap:12px" });
+    const lecChips = el("div", { class: "filters" });
+    lecs.forEach((l) => {
+      const c = el("button", { class: "chip", "aria-pressed": sel.has(l.id) }, `L${l.num} ${l.short || l.title} <span class="score">${l.questions.length}</span>`);
+      c.addEventListener("click", () => { sel.has(l.id) ? sel.delete(l.id) : sel.add(l.id); c.setAttribute("aria-pressed", sel.has(l.id)); store.set("drill:sel", [...sel]); });
+      lecChips.append(c);
+    });
+    const group = (label, values, get, set) => {
+      const g = el("div", { class: "filters" }); g.append(el("span", { class: "score", style: "align-self:center" }, label));
+      values.forEach(([v, t]) => {
+        const c = el("button", { class: "chip", "aria-pressed": get() === v }, t);
+        c.addEventListener("click", () => { set(v); g.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", x === c)); });
+        g.append(c);
+      });
+      return g;
+    };
+    panel.append(el("div", { class: "score" }, "Lectures"), lecChips,
+      group("Type", [["all", "Both"], ["mc", "Multiple choice"], ["open", "Open"]], () => type, (v) => (type = v)),
+      group("Size", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], () => size, (v) => (size = v)),
+      group("Mode", [["random", "Random"], ["missed", "Missed only"]], () => mode, (v) => (mode = v)));
+    const go = el("button", { class: "btn primary" }, "Draw questions");
+    const tools = el("div", { class: "tools" }); tools.append(go, themeButton(),
+      el("button", { class: "btn", onclick: () => { store.set("missed", []); alert("Missed list cleared."); } }, "Clear missed list"));
+    panel.append(tools);
+    app.append(panel);
+
+    const out = el("div", { style: "display:grid;gap:14px" });
+    app.append(out);
+    go.addEventListener("click", () => {
+      const missed = new Set(store.get("missed", []));
+      let pool = all.filter((x) => sel.has(x.lec.id) && (type === "all" || x.q.type === type));
+      if (mode === "missed") pool = pool.filter((x) => missed.has(qid(x.lec, x.i)));
+      if (!pool.length) { out.innerHTML = `<div class="box">No questions match — ${mode === "missed" ? "you have no missed questions for this selection 🎉" : "select at least one lecture"}.</div>`; return; }
+      renderQuiz(out, shuffle(pool).slice(0, size), { showLecture: true });
+      out.scrollIntoView({ behavior: "smooth" });
+    });
+  };
+
+  /* ---------- hub page ---------- */
+  GA.themeButton = themeButton;
+})();
+
+</script>
+<script>
+// status: "ready" = study page exists; "slides" = folder exists, no study page yet; "soon" = lecture not yet given / no slides.
+const weeks = [
+  ["Week 1 — Genome structure", [
+    ["00", "Basics of Genomics", "Self-study prep · Jo-Anne Verschoor", "00-prep-basics-of-genomics", "ready"],
+    ["01", "Genome Diversity, basis of life", "Tue 27 Oct · Han de Winde", "01-intro-genome-diversity", "ready"],
+    ["02", "Viruses & Phages", "Wed 28 Oct · Adam Sidi Mabrouk", "02-viruses-and-phages", "ready"],
+    ["03", "Bacteria & HGT", "Thu 29 Oct · Astri Kusumawardhani", "03-bacteria-and-hgt", "soon"],
+    ["04", "Tools: sequencing, assembly & sample prep", "Fri 30 Oct · Vriesendorp/Henkel, Ariyurek", "04-tools-sequencing-and-assembly", "ready"],
+  ]],
+  ["Week 2 — Genome structure and function", [
+    ["05", "Genome Comparisons & GWAS", "Mon 2 Nov · Sjoerd Seekles", "05-genome-comparisons-and-gwas", "ready"],
+    ["06", "Bioinformatics workshop & case study", "Tue 3 Nov · Verschoor & Vriesendorp", "", "soon"],
+    ["07", "Genome evolution & taxonomy; Aspergillus", "Wed 4 Nov · Vera van Noort, Arthur Ram", "", "soon"],
+    ["08", "Comparative genomics; yeast", "Thu 5 Nov · Han de Winde", "", "soon"],
+    ["09", "Genome evolution: polyketides & central metabolism", "Fri 6 Nov · Machushynets, de Winde", "", "soon"],
+  ]],
+  ["Week 3 — Genome variation", [
+    ["10", "Genome complexity & metagenomics; wrap-up", "Mon 9 Nov · Paco Barona, de Winde", "", "soon"],
+    ["11", "Sponge microbiomes; Triturus", "Tue 10 Nov · Nicole de Voogd, Ben Wielstra", "", "soon"],
+    ["12", "Plant microbiomes; plant genomes", "Thu 12 Nov · Akos Kovács, guest", "", "soon"],
+    ["13", "Ancient DNA; human genetics & health", "Fri 13 Nov · Eveline Altena, Gerben Voshol", "", "soon"],
+  ]],
+];
+const host = document.getElementById("weeks");
+for (const [w, items] of weeks) {
+  host.insertAdjacentHTML("beforeend", `<h2 class="week">${w}</h2>`);
+  const grid = document.createElement("div"); grid.className = "grid";
+  for (const [n, t, who, dir, st] of items) {
+    const href = st === "ready" ? `${dir}.html` : dir ? `https://github.com/gijstimmer/Genomic-Architecture/blob/main/${dir}` : null;
+    grid.insertAdjacentHTML("beforeend",
+      `<${href ? `a href="${href}"` : "div"} class="tile${st === "ready" ? "" : " soon"}">
+        <span class="n">L${n}${st === "ready" ? "" : " · coming"}</span><h3>${t}</h3><p>${who}</p></${href ? "a" : "div"}>`);
+  }
+  host.append(grid);
+}
+document.getElementById("theme").append(GA.themeButton());
+</script>
+</body>
+</html>

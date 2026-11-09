@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<title>L04 Tools: Sequencing</title>
+<style>
+/* Shared styles for all Genomic Architecture study pages.
+   Layout: one narrow study column; tabs switch between Learn (concept cards) and Quiz. */
+:root {
+  --bg: #eef2f1;
+  --surface: #ffffff;
+  --ink: #17242a;
+  --muted: #5a6a70;
+  --line: #d3dedb;
+  --accent: #1f6f5c;
+  --accent-soft: #d8ece5;
+  --again: #b0521c;
+  --again-soft: #f6e4d8;
+  --good: #2c7a3b;
+  --good-soft: #dcefdf;
+  --hl: #fff3c4;
+  --display: "Newsreader", Georgia, "Times New Roman", serif;
+  --ui: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, "Courier New", monospace;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1517; --surface: #162024; --ink: #e3eaea; --muted: #91a3a6; --line: #28383b;
+    --accent: #62c7a8; --accent-soft: #163a31; --again: #e48d58; --again-soft: #3a2417;
+    --good: #6dc47c; --good-soft: #1b3421; --hl: #3d3514;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1517; --surface: #162024; --ink: #e3eaea; --muted: #91a3a6; --line: #28383b;
+  --accent: #62c7a8; --accent-soft: #163a31; --again: #e48d58; --again-soft: #3a2417;
+  --good: #6dc47c; --good-soft: #1b3421; --hl: #3d3514;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.6 var(--ui);
+  padding: 28px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px));
+}
+.wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 22px; }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* header */
+.crumbs { font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.crumbs a { color: var(--muted); }
+.top { display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(1.9rem, 5vw, 2.6rem)/1.08 var(--display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 em { font-weight: 400; color: var(--accent); }
+.lede { margin: 0; color: var(--muted); max-width: 66ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 500; }
+
+/* tabs */
+.bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 5; border-bottom: 1px solid var(--line); }
+.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.tab { border: 0; background: transparent; padding: 8px 16px; font-weight: 500; }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--surface); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 13px; font-size: 13.5px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+
+/* objectives / take-homes */
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; }
+.box h2 { font: 600 1.15rem/1.2 var(--display); margin: 0 0 8px; }
+.box ul { margin: 0; padding-left: 20px; }
+.box li { margin: 3px 0; }
+
+/* concept sections */
+.section { display: grid; gap: 10px; }
+.section > h2 { font: 600 1.45rem/1.2 var(--display); margin: 14px 0 0; }
+.section > .src { font-size: 12.5px; color: var(--muted); margin-top: -6px; }
+details.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+details.card > summary { list-style: none; padding: 13px 18px; font-weight: 600; display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::before { content: "+"; font: 500 16px/1 var(--mono); color: var(--accent); width: 12px; flex: none; }
+details.card[open] > summary::before { content: "−"; }
+details.card > .body { padding: 0 20px 16px 40px; }
+.body p { margin: 0 0 10px; }
+.body ul, .body ol { margin: 0 0 10px; padding-left: 20px; }
+.body li { margin: 3px 0; }
+.body table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 6px 0 12px; display: block; overflow-x: auto; }
+.body th, .body td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+.body th { background: var(--accent-soft); font-weight: 600; }
+.key { background: var(--hl); padding: 0 3px; border-radius: 3px; }
+.exam { border-left: 3px solid var(--again); background: var(--again-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 14px; margin: 8px 0 4px; }
+.exam::before { content: "Exam tip — "; font-weight: 600; color: var(--again); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.seq { font-family: var(--mono); background: var(--bg); padding: 8px 10px; border-radius: 6px; overflow-x: auto; white-space: pre; font-size: 13px; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 12px; }
+.flow span { background: var(--accent-soft); border-radius: 6px; padding: 4px 9px; font-size: 13px; }
+.flow i { color: var(--muted); font-style: normal; }
+
+/* quiz */
+.qhead { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.score { font: 500 14px var(--mono); color: var(--muted); }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; display: grid; gap: 10px; }
+.q .qn { font: 500 12px var(--mono); color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.q .tag { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 1px 8px; }
+.q .stem { font-weight: 600; }
+.opts { display: grid; gap: 7px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 9px 12px; display: flex; gap: 10px; }
+.opt .l { font: 500 13px var(--mono); color: var(--muted); }
+.opt:hover:not([disabled]) { border-color: var(--accent); }
+.opt[disabled] { cursor: default; }
+.opt.right { border-color: var(--good); background: var(--good-soft); }
+.opt.wrong { border-color: var(--again); background: var(--again-soft); }
+.explain { font-size: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.explain b { color: var(--accent); }
+.open-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.good { border-color: var(--good); color: var(--good); }
+.btn.bad { border-color: var(--again); color: var(--again); }
+textarea { width: 100%; min-height: 70px; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.hidden { display: none !important; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+/* hub */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 6px; text-decoration: none; color: var(--ink); }
+.tile:hover { border-color: var(--accent); }
+.tile .n { font: 500 12px var(--mono); color: var(--accent); }
+.tile h3 { margin: 0; font: 600 1.15rem/1.2 var(--display); }
+.tile p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.tile.soon { opacity: .6; }
+.week { font: 600 1.3rem/1.2 var(--display); margin: 10px 0 0; }
+footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+
+</style>
+</head>
+<body>
+<!-- Generated by tools/build-standalone.js. Do not edit; edit the source files and rebuild. -->
+<main class="wrap" id="app"></main>
+<script>window.GA = { links: {
+  hub: "index.html",
+  drill: "exam-drill.html",
+  slide: (lec, file) => "https://github.com/gijstimmer/Genomic-Architecture/blob/main/04-tools-sequencing-and-assembly/slides/" + encodeURIComponent(file),
+} };</script>
+<script>
+/* Shared renderer for the Genomic Architecture study pages.
+ *
+ * Each lecture folder has a `study-content.js` that calls GA.register({...}).
+ * A lecture page (study.html) calls GA.lecturePage(id) to render that lecture.
+ * The exam drill (exam-drill/index.html) loads every study-content.js and calls GA.drillPage().
+ *
+ * Content format (see any study-content.js):
+ *   { id, num, title, lecturer, date, slides: [file names], summary,
+ *     objectives: [..], takeHome: [..],
+ *     sections: [{ title, src, cards: [{ t, html }] }],
+ *     questions: [{ type: 'mc', q, options: [..], answer: index, explain, src }
+ *                 | { type: 'open', q, answer, src }] }
+ * html strings may use <span class="key">, <div class="exam">, <div class="seq">, tables, lists.
+ */
+(function () {
+  const GA = (window.GA = window.GA || {});
+  GA.lectures = GA.lectures || [];
+  GA.register = (lec) => GA.lectures.push(lec);
+  // Link targets. The standalone build (tools/build-standalone.js) overrides these
+  // by defining window.GA.links before this script runs.
+  const links = Object.assign({
+    hub: "../index.html",
+    drill: "../exam-drill/index.html",
+    slide: (lec, file) => "slides/" + file,
+  }, GA.links);
+
+  /* ---------- small helpers ---------- */
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const el = (tag, attrs = {}, html) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") n.className = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v);
+    }
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("ga:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("ga:" + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } },
+  };
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const qid = (lec, i) => lec.id + ":" + i;
+
+  /* ---------- theme ---------- */
+  function applyTheme() { const t = store.get("theme", null); if (t) document.documentElement.setAttribute("data-theme", t); }
+  function themeButton() {
+    return el("button", { class: "btn", title: "Toggle light/dark", onclick: () => {
+      const cur = document.documentElement.getAttribute("data-theme") ||
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const next = cur === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next); store.set("theme", next);
+    } }, "◐ Theme");
+  }
+  applyTheme();
+
+  /* ---------- quiz rendering (shared by lecture page and drill) ---------- */
+  function renderQuiz(container, items, opts = {}) {
+    // items: [{ lec, i, q }]
+    container.innerHTML = "";
+    const missed = new Set(store.get("missed", []));
+    let answered = 0, correct = 0;
+    const scoreEl = el("div", { class: "score" });
+    const updateScore = () => { scoreEl.textContent = `${correct} / ${answered} correct · ${items.length} questions`; };
+    const head = el("div", { class: "qhead" });
+    head.append(scoreEl);
+    if (opts.controls) head.append(opts.controls);
+    container.append(head);
+    updateScore();
+
+    const record = (key, ok) => {
+      answered++; if (ok) { correct++; missed.delete(key); } else missed.add(key);
+      store.set("missed", [...missed]); updateScore();
+    };
+
+    items.forEach(({ lec, i, q }, n) => {
+      const key = qid(lec, i);
+      const card = el("div", { class: "q" });
+      const meta = [`Q${n + 1}`, q.type === "mc" ? "multiple choice" : "open question"];
+      card.append(el("div", { class: "qn" },
+        meta.map((m) => `<span>${m}</span>`).join("") +
+        (opts.showLecture ? `<span class="tag">L${lec.num} · ${lec.short || lec.title}</span>` : "") +
+        (q.src ? `<span>${q.src}</span>` : "")));
+      card.append(el("div", { class: "stem" }, q.q));
+
+      if (q.type === "mc") {
+        const order = shuffle(q.options.map((o, k) => k));
+        const box = el("div", { class: "opts" });
+        const explain = el("div", { class: "explain hidden" },
+          `<b>Answer:</b> ${q.options[q.answer]}${q.explain ? "<br>" + q.explain : ""}`);
+        order.forEach((k, pos) => {
+          const b = el("button", { class: "opt" }, `<span class="l">${"ABCDEF"[pos]}</span><span>${q.options[k]}</span>`);
+          b.addEventListener("click", () => {
+            box.querySelectorAll(".opt").forEach((x) => (x.disabled = true));
+            b.classList.add(k === q.answer ? "right" : "wrong");
+            box.children[order.indexOf(q.answer)].classList.add("right");
+            explain.classList.remove("hidden");
+            record(key, k === q.answer);
+          });
+          box.append(b);
+        });
+        card.append(box, explain);
+      } else {
+        const ta = el("textarea", { placeholder: "Write your answer first (optional), then reveal the model answer…" });
+        const ans = el("div", { class: "explain hidden" }, `<b>Model answer:</b> ${q.answer}`);
+        const grade = el("div", { class: "open-actions hidden" });
+        const done = (ok) => { grade.innerHTML = `<span class="score">${ok ? "Marked as correct" : "Marked for review"}</span>`; record(key, ok); };
+        grade.append(
+          el("button", { class: "btn good", onclick: () => done(true) }, "✓ I had it"),
+          el("button", { class: "btn bad", onclick: () => done(false) }, "✗ Review again"));
+        const reveal = el("button", { class: "btn", onclick: () => { ans.classList.remove("hidden"); grade.classList.remove("hidden"); reveal.remove(); } }, "Reveal answer");
+        card.append(ta, el("div", { class: "open-actions" }), ans, grade);
+        card.children[3].append(reveal);
+      }
+      container.append(card);
+    });
+  }
+
+  /* ---------- lecture page ---------- */
+  GA.lecturePage = function (id) {
+    const lec = GA.lectures.find((l) => l.id === id);
+    const app = $("#app");
+    document.title = `L${lec.num} ${lec.short || lec.title}`;
+
+    app.append(el("nav", { class: "crumbs" },
+      `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Lecture ${lec.num}</span>`));
+    app.append(el("header", { class: "top" },
+      `<div class="eyebrow">Lecture ${lec.num} · ${lec.date}</div>
+       <h1>${lec.titleHtml || lec.title}</h1>
+       <p class="lede">${lec.summary}</p>
+       <div class="meta"><span><b>Lecturer:</b> ${lec.lecturer}</span>
+       <span><b>Slides:</b> ${lec.slides.map((s) => `<a href="${links.slide(lec, s)}">${s}</a>`).join(", ")}</span></div>`));
+
+    const learn = el("div", { class: "section-wrap", style: "display:grid;gap:18px" });
+    const quiz = el("div", { style: "display:grid;gap:14px" });
+    quiz.classList.add("hidden");
+
+    const tabs = el("div", { class: "tabs", role: "tablist" });
+    const setTab = (which) => {
+      tabs.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.t === which));
+      learn.classList.toggle("hidden", which !== "learn");
+      quiz.classList.toggle("hidden", which !== "quiz");
+      store.set("tab:" + id, which);
+    };
+    [["learn", "Learn"], ["quiz", `Quiz (${lec.questions.length})`]].forEach(([k, label]) =>
+      tabs.append(el("button", { class: "tab", role: "tab", "data-t": k, onclick: () => setTab(k) }, label)));
+    const tools = el("div", { class: "tools" });
+    tools.append(
+      el("button", { class: "btn", onclick: () => learn.querySelectorAll("details").forEach((d) => (d.open = true)) }, "Expand all"),
+      el("button", { class: "btn", onclick: () => learn.querySelectorAll("details").forEach((d) => (d.open = false)) }, "Collapse all"),
+      themeButton());
+    const bar = el("div", { class: "bar" }); bar.append(tabs, tools);
+    app.append(bar);
+
+    // Learn tab
+    if (lec.objectives) learn.append(el("div", { class: "box" }, `<h2>Learning goals</h2><ul>${lec.objectives.map((o) => `<li>${o}</li>`).join("")}</ul>`));
+    lec.sections.forEach((s) => {
+      const sec = el("section", { class: "section" }, `<h2>${s.title}</h2>${s.src ? `<div class="src">${s.src}</div>` : ""}`);
+      s.cards.forEach((c) => {
+        const d = el("details", { class: "card" }, `<summary>${c.t}</summary><div class="body">${c.html}</div>`);
+        sec.append(d);
+      });
+      learn.append(sec);
+    });
+    if (lec.takeHome) learn.append(el("div", { class: "box" }, `<h2>Take-home messages</h2><ul>${lec.takeHome.map((o) => `<li>${o}</li>`).join("")}</ul>`));
+    learn.append(el("div", { style: "text-align:center" }, ""));
+    learn.lastChild.append(el("button", { class: "btn primary", onclick: () => { setTab("quiz"); scrollTo(0, 0); } }, "Test yourself →"));
+
+    // Quiz tab
+    const drawQuiz = (shuffled) => {
+      const items = lec.questions.map((q, i) => ({ lec, i, q }));
+      const controls = el("div", { class: "tools" });
+      controls.append(
+        el("button", { class: "btn", onclick: () => drawQuiz(true) }, "Shuffle & restart"),
+        el("a", { class: "btn", href: links.drill, style: "text-decoration:none" }, "Course-wide drill →"));
+      renderQuiz(quiz, shuffled ? shuffle(items) : items, { controls });
+    };
+    drawQuiz(false);
+
+    app.append(learn, quiz);
+    app.append(el("footer", {}, "Summaries and questions are study aids written from the lecture slides — when in doubt, the slides and the lecture recording are authoritative."));
+    setTab(store.get("tab:" + id, "learn"));
+  };
+
+  /* ---------- exam drill ---------- */
+  GA.drillPage = function () {
+    const app = $("#app");
+    const lecs = GA.lectures.slice().sort((a, b) => a.num.localeCompare(b.num));
+    const all = lecs.flatMap((lec) => lec.questions.map((q, i) => ({ lec, i, q })));
+    const sel = new Set(store.get("drill:sel", lecs.map((l) => l.id)));
+    let type = "all", size = 20, mode = "random";
+
+    app.append(el("nav", { class: "crumbs" }, `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Exam drill</span>`));
+    app.append(el("header", { class: "top" },
+      `<div class="eyebrow">Course-wide practice</div><h1>Exam <em>drill</em></h1>
+       <p class="lede">Mixed questions from every lecture, like the final exam (multiple choice + open questions).
+       Pick the lectures, draw a set, and use “Missed only” to repeat what you got wrong — your misses are remembered in this browser.</p>`));
+
+    const panel = el("div", { class: "box", style: "display:grid;gap:12px" });
+    const lecChips = el("div", { class: "filters" });
+    lecs.forEach((l) => {
+      const c = el("button", { class: "chip", "aria-pressed": sel.has(l.id) }, `L${l.num} ${l.short || l.title} <span class="score">${l.questions.length}</span>`);
+      c.addEventListener("click", () => { sel.has(l.id) ? sel.delete(l.id) : sel.add(l.id); c.setAttribute("aria-pressed", sel.has(l.id)); store.set("drill:sel", [...sel]); });
+      lecChips.append(c);
+    });
+    const group = (label, values, get, set) => {
+      const g = el("div", { class: "filters" }); g.append(el("span", { class: "score", style: "align-self:center" }, label));
+      values.forEach(([v, t]) => {
+        const c = el("button", { class: "chip", "aria-pressed": get() === v }, t);
+        c.addEventListener("click", () => { set(v); g.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", x === c)); });
+        g.append(c);
+      });
+      return g;
+    };
+    panel.append(el("div", { class: "score" }, "Lectures"), lecChips,
+      group("Type", [["all", "Both"], ["mc", "Multiple choice"], ["open", "Open"]], () => type, (v) => (type = v)),
+      group("Size", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], () => size, (v) => (size = v)),
+      group("Mode", [["random", "Random"], ["missed", "Missed only"]], () => mode, (v) => (mode = v)));
+    const go = el("button", { class: "btn primary" }, "Draw questions");
+    const tools = el("div", { class: "tools" }); tools.append(go, themeButton(),
+      el("button", { class: "btn", onclick: () => { store.set("missed", []); alert("Missed list cleared."); } }, "Clear missed list"));
+    panel.append(tools);
+    app.append(panel);
+
+    const out = el("div", { style: "display:grid;gap:14px" });
+    app.append(out);
+    go.addEventListener("click", () => {
+      const missed = new Set(store.get("missed", []));
+      let pool = all.filter((x) => sel.has(x.lec.id) && (type === "all" || x.q.type === type));
+      if (mode === "missed") pool = pool.filter((x) => missed.has(qid(x.lec, x.i)));
+      if (!pool.length) { out.innerHTML = `<div class="box">No questions match — ${mode === "missed" ? "you have no missed questions for this selection 🎉" : "select at least one lecture"}.</div>`; return; }
+      renderQuiz(out, shuffle(pool).slice(0, size), { showLecture: true });
+      out.scrollIntoView({ behavior: "smooth" });
+    });
+  };
+
+  /* ---------- hub page ---------- */
+  GA.themeButton = themeButton;
+})();
+
+</script>
+<script>
+GA.register({
+  id: "04",
+  num: "04",
+  short: "Tools: Sequencing",
+  title: "Tools for genomes: sequencing, assembly & sample prep",
+  titleHtml: "Tools for genomes: <em>sequencing &amp; assembly</em>",
+  lecturer: "Christiaan Henkel & Bastienne Vriesendorp; Yavuz Ariyurek (LGTC/LUMC)",
+  date: "Fri 30 Oct 2026",
+  slides: ["1-dna-sequencing-henkel-vriesendorp.pdf", "2-assembly-and-functional-genomics-henkel-vriesendorp.pdf", "3-ngs-sample-prep-ariyurek.pdf"],
+  summary: "Three sequencing generations (Sanger, Illumina, PacBio, Nanopore) and when to use which; de novo genome assembly, contigs/scaffolds/N50 and why repeats make assembly hard; functional genomics (ChIP-seq, ATAC-seq, RNA-seq, single-cell and spatial transcriptomics); and the wet-lab side: extraction, QC, fragmentation, library prep, targeted sequencing.",
+  objectives: [
+    "Explain the principle, read length, throughput and errors of Sanger, Illumina, PacBio and Nanopore",
+    "Choose the right platform for a research question",
+    "Explain shotgun assembly, contigs, scaffolds, coverage and N50; name the three assembly problems",
+    "Describe ChIP-seq, ATAC-seq, RNA-seq, scRNA-seq and spatial transcriptomics",
+    "Describe the sample-prep workflow and its QC steps (260/280, 260/230, RIN)",
+  ],
+  sections: [
+    {
+      title: "Part A · DNA sequencing technologies",
+      src: "Deck 1 (Henkel & Vriesendorp)",
+      cards: [
+        { t: "Read & generations", html: `
+          <p>A <b>sequencing read</b> = the result of sequencing a single DNA fragment (a text file of ATCGs).</p>
+          <table><tr><th>Generation</th><th>Reads</th><th>Platforms</th></tr>
+          <tr><td>1st</td><td>single, short(ish) reads</td><td>Sanger (1977)</td></tr>
+          <tr><td>2nd (NGS)</td><td>many, shorter reads</td><td>454 pyrosequencing (2005), Ion Torrent (2010), Solexa/<b>Illumina</b> SBS (2005), DNA nanoballs (MGI), SOLiD, Element avidity (2023)</td></tr>
+          <tr><td>3rd (also NGS)</td><td>many, long reads, single molecules</td><td><b>PacBio</b> SMRT (2011), <b>Oxford Nanopore</b> (2014)</td></tr></table>` },
+        { t: "Sanger sequencing (chain termination)", html: `
+          <ul>
+            <li>DNA polymerase copies the template; <span class="key">dideoxynucleotides (ddNTPs)</span> lack the 3′-OH and terminate synthesis → fragments of every length ending in a known base.</li>
+            <li>Original: 4 separate reactions (ddA/T/C/G), radioactive labels, gel electrophoresis, 4 lanes. Automated: one reaction, 4 <b>fluorescent</b> labels, capillary electrophoresis.</li>
+            <li>ABI 3730xl: 96 capillaries, read length <b>400–900 bp</b>, max 2.88 Mbp/day.</li>
+            <li>Accurate and reliable → still the standard for <b>validation</b> (e.g. checking a single clone).</li>
+          </ul>` },
+        { t: "Illumina: sequencing by synthesis (SBS)", html: `
+          <ol>
+            <li><b>Library prep</b>: fragment DNA, ligate <b>adapters</b> (universal primer sites) to every fragment.</li>
+            <li><b>Amplification</b>: bridge amplification on a flow cell → clusters of identical copies (signal boost).</li>
+            <li><b>SBS</b>: fluorescently labelled reversible-terminator nucleotides added one per cycle; imaged; terminator removed; repeat.</li>
+          </ol>
+          <ul>
+            <li>Reads are <span class="key">intrinsically short</span> (usually ≤2×150 bp): amplification is less reliable for long fragments; trade-off fragment length vs cluster density; reactions are never 100% efficient so clusters go <b>out of phase</b> after many cycles → quality drops along the read.</li>
+            <li>Quality typically &gt;99.9% (<b>Q30</b>); throughput up to 16 Tbp per NovaSeq X run.</li>
+            <li><b>Paired-end</b> reads: both ends of a fragment are read.</li>
+            <li>Short reads are great for <b>quantitative</b> applications (counting molecules); long reads for <b>structural</b> ones (genomes, isoforms).</li>
+          </ul>` },
+        { t: "Third generation: no amplification", html: `
+          <p>Why skip amplification? PCR is limited to thousands of nt, clusters lose sync, and amplification is biased (e.g. against GC-rich DNA). Third-gen sequences <b>single molecules</b>.</p>
+          <ul>
+            <li><b>PacBio SMRT</b>: polymerase in a zero-mode waveguide (millions of tiny wells) incorporates fluorescent nucleotides in real time. Reads up to ~30 kb. <b>Polymerase kinetics</b> reveal base modifications. HiFi (circular consensus) = Q30.</li>
+            <li><b>Oxford Nanopore</b>: motor protein ratchets DNA through a protein nanopore in a membrane; changes in <b>ionic current</b> are basecalled by <b>neural networks</b>. MinION: 512 channels, ~500 nt/s, ~20 Gbp/flowcell. Read length up to 4 Mbp, limited only by DNA quality. Detects methylation directly; can sequence RNA directly.</li>
+          </ul>
+          <p>Trade-offs: single molecules are harder to detect → fewer reads, higher raw error; solved by reading the same molecule several times (HiFi Q30, Nanopore duplex Q20+).</p>` },
+        { t: "Summary table (memorise)", html: `
+          <table><tr><th></th><th>Sanger</th><th>Illumina</th><th>PacBio</th><th>Nanopore</th></tr>
+          <tr><td>Principle</td><td>dideoxy chain termination</td><td>sequencing by synthesis</td><td>single-molecule real-time</td><td>nanopore current sensing</td></tr>
+          <tr><td>Read length</td><td>&lt;900 bp</td><td>2×150 bp</td><td>~25 kbp HiFi</td><td>10 kbp – 4 Mbp</td></tr>
+          <tr><td>Data</td><td>&lt;2.88 Mbp/day</td><td>7.5 Tbp/flowcell</td><td>100 Gbp</td><td>370 Gbp</td></tr>
+          <tr><td>Run time</td><td>hours</td><td>13–48 h</td><td>&lt;30 h</td><td>&lt;72 h</td></tr>
+          <tr><td>Errors</td><td>&lt;0.1%</td><td>&gt;85% ≥Q30</td><td>Q30 HiFi</td><td>Q20 simplex</td></tr>
+          <tr><td>Best for</td><td>validation, single clones</td><td>quantitative (RNA-seq, counting), NGS standard</td><td colspan="2">genome assembly, structural variation, isoforms, modifications</td></tr></table>
+          <div class="exam">Q-score: Q = −10·log₁₀(P<sub>error</sub>) → Q20 = 1 error/100 bp (99%), Q30 = 1/1000 (99.9%), Q50 = 1/100,000.</div>` },
+      ],
+    },
+    {
+      title: "Part B · Genome assembly",
+      src: "Deck 2 (Henkel & Vriesendorp), slides 3–33",
+      cards: [
+        { t: "Why sequence DNA?", html: `<ul><li>Structural/comparative genomics: genome sequencing</li><li>Functional genomics: gene expression, chromatin structure, DNA-binding elements</li><li>Genome diagnostics: human variation (SNPs, structural), species diagnostics, metagenomics, eDNA, ancient DNA</li><li>Synthetic biology, information storage</li></ul>` },
+        { t: "Shotgun (de novo) assembly", html: `
+          <div class="flow"><span>genome (in vivo)</span><i>→</i><span>library (in vitro)</span><i>→</i><span>reads</span><i>→</i><span>de novo assembly (in silico)</span></div>
+          <ul><li>Bottom-up: generate random small fragments from the whole genome, sequence each position many times (&gt;8–50×), let the computer find <b>overlaps</b>.</li>
+          <li>Fast and cheap, but assembly is error-prone and computationally challenging.</li></ul>` },
+        { t: "Terminology: contig, scaffold, coverage, N50", html: `
+          <ul>
+            <li><b>Contig</b>: contiguous sequence without gaps.</li>
+            <li><b>Scaffold</b>: ordered (and oriented) contigs linked by long or paired reads, with gaps filled with <span class="mono">NNNN</span>.</li>
+            <li><b>Coverage</b>: sampling depth, typically &gt;30×.</li>
+            <li><b>N50</b>: length-weighted median. Sort fragments by length (longest first), add up lengths; N50 = length of the fragment at which the cumulative sum reaches 50% of the total assembly. Higher N50 = more contiguous assembly.</li>
+          </ul>
+          <div class="exam">Worked example: contigs 50, 30, 10, 5, 5 kb (total 100). Cumulative: 50 → 50% reached at the first contig → N50 = 50 kb. Contigs 30, 25, 20, 15, 10: cumulative 30, 55 → N50 = 25 kb.</div>` },
+        { t: "The three assembly problems", html: `
+          <ol>
+            <li><b>Sequencing limitations</b>: genomes are very long, reads are short, full chromosomes can't be isolated intact (strand breaks).</li>
+            <li><b>Technical errors</b>: uncorrected sequencing errors → misassemblies; sequencing <b>bias</b> (e.g. GC bias in Illumina) → no/low coverage.</li>
+            <li><b>Genomic architecture</b>: local sequence doesn't contain enough information to reconstruct the global structure — <span class="key">repeats</span> longer than the reads create ambiguous paths in the assembly graph; also polymorphisms (heterozygosity) and chromosome ends.</li>
+          </ol>
+          <p>Short-read assembly quality: small simple genomes ~100% complete, 1–100 contigs, N50 ~1 Mbp; large complex genomes &lt;90%, &gt;10,000 contigs, N50 ~100 kbp; massive genomes &lt;50%, millions of contigs, N50 &lt;1 kbp.</p>` },
+        { t: "Long-read assembly, synteny, eel example", html: `
+          <ul>
+            <li>Long reads <b>span repeats</b> (e.g. LTR retrotransposons ~10 kbp) → resolve graph ambiguities; now enough throughput for full de novo assembly.</li>
+            <li>Problem: raw identity ~98% → harder to find overlaps, complex graphs, heavy computing; <b>polishing</b> by high-coverage consensus → Q50.</li>
+            <li>European eel: Illumina (2012) 186,281 scaffolds, N50 78 kbp → Nanopore + Illumina (2017) 2366 scaffolds, N50 1.23 Mbp → PromethION + Hi-C (2023) <b>19 scaffolds</b> (chromosomes), N50 55.5 Mbp.</li>
+            <li><b>Synteny</b> = conservation of local gene order; strong phylogenetic signal largely independent of sequence comparison; reveals genome duplications.</li>
+            <li>All assemblies contain errors — beware contig ends and scaffold gaps. Modern assemblies approach <b>telomere-to-telomere</b>.</li>
+          </ul>` },
+      ],
+    },
+    {
+      title: "Part C · Functional genomics",
+      src: "Deck 2, slides 34–70",
+      cards: [
+        { t: "What is functional genomics?", html: `<p>The field that aims to understand <b>how genes lead to phenotypes</b>: cellular information processing, gene expression (transcriptomics) and its regulation (epigenetics, gene regulatory networks).</p>
+          <table><tr><th>Layer</th><th>Assay</th></tr>
+          <tr><td>DNA methylation</td><td>bisulfite sequencing, nanopore methylation</td></tr>
+          <tr><td>Protein–DNA binding / chromatin</td><td>ChIP-seq, ATAC-seq</td></tr>
+          <tr><td>3D genome</td><td>Hi-C</td></tr>
+          <tr><td>Transcription</td><td>RNA-seq</td></tr>
+          <tr><td>Translation</td><td>ribo-seq</td></tr></table>` },
+        { t: "ChIP-seq vs ATAC-seq vs RNA-seq", html: `
+          <table><tr><th>Assay</th><th>Library of…</th><th>Measures</th></tr>
+          <tr><td><b>ChIP-seq</b></td><td>DNA bound by a <b>specific protein</b> (crosslink → immunoprecipitate with antibody)</td><td>binding sites of TFs / histone marks → genome (in)activity</td></tr>
+          <tr><td><b>ATAC-seq</b></td><td>DNA with few/no proteins bound (Tn5 transposase "tagmentation" inserts adapters into open chromatin)</td><td>accessible chromatin → genome activity</td></tr>
+          <tr><td><b>RNA-seq</b></td><td>cDNA from mRNA</td><td>transcriptional activity / expression levels</td></tr></table>` },
+        { t: "RNA-seq and differential expression", html: `
+          <ul>
+            <li>Sequencer used as a <b>molecule counter</b>: number of reads per gene ~ expression level (correct for <b>gene length</b>!). Expression spans orders of magnitude (plot on log scale).</li>
+            <li>Mostly Illumina for counting; long reads for <b>splice isoforms</b> and RNA modifications (epitranscriptomics).</li>
+            <li>Differential expression: control vs treatment, statistical test per gene; needs <span class="key">≥3 biological replicates</span> per condition; only for comparable samples; requires <b>normalisation</b>.</li>
+            <li>Depth: 10–30(–50) million reads per sample → <b>multiplexing</b> with barcodes in the adapters (up to ~380 samples per lane).</li>
+          </ul>` },
+        { t: "Bulk vs single-cell RNA-seq", html: `
+          <table><tr><th></th><th>Bulk</th><th>Single-cell</th></tr>
+          <tr><td>Output</td><td>average expression of all cells</td><td>profile per cell → cell types, heterogeneity</td></tr>
+          <tr><td>Quantification</td><td>reliable</td><td>less reliable (low depth, 3′ bias, RT dropout, doublets)</td></tr>
+          <tr><td>Cost</td><td>cheap, but needs replicates</td><td>expensive, fewer samples</td></tr></table>
+          <ul>
+            <li>10x Genomics: gel beads with a <b>cell barcode</b> + a <b>UMI</b> (unique molecular identifier) per transcript.</li>
+            <li>Output: a large, <b>sparse</b> table (1000–1,000,000 cells × ~20,000 genes, mostly zeros).</li>
+            <li>Clustering (2D plots, e.g. UMAP) reveals cell types (pituitary example: 16 clusters; Lh vs Fsh gonadotropes).</li>
+            <li><b>Single-nuclei</b> seq avoids damage from tissue dissociation. <b>Deconvolution</b> uses scRNA-seq profiles to interpret bulk data.</li>
+            <li><b>Spatial transcriptomics</b>: barcodes on a slide (Visium: ~5000 spots, 55 µm) → transcriptome + location. Methods of the year: 2013 single-cell seq, 2019 multimodal omics, 2020 spatial transcriptomics.</li>
+          </ul>` },
+      ],
+    },
+    {
+      title: "Part D · From sample to data (NGS sample prep)",
+      src: "Deck 3 (Ariyurek, LGTC)",
+      cards: [
+        { t: "What can be sequenced?", html: `<ul><li>Whole genome DNA: shotgun libraries, whole-genome amplification (WGA)</li><li>Targeted DNA: capture / whole exome sequencing (WES), amplicons / gene panels</li><li>Bulk RNA: direct, or via cDNA</li><li>Single cells: RNA, DNA (ATAC, methyl-seq, CNV)</li></ul>` },
+        { t: "Workflow", html: `<div class="flow"><span>Extraction</span><i>→</i><span>QC</span><i>→</i><span>(Amplification)</span><i>→</i><span>Fragmentation</span><i>→</i><span>Adapter ligation</span><i>→</i><span>Size selection</span><i>→</i><span>Library QC</span><i>→</i><span>Sequencing</span></div>
+          <p><b>"Junk in, junk out" — QC is VERY important.</b></p>` },
+        { t: "DNA extraction methods", html: `<table><tr><th>Method</th><th>Note</th></tr>
+          <tr><td>Phenol(-chloroform)</td><td>gold standard but tricky</td></tr><tr><td>Spin columns</td><td>easy, but DNA is short</td></tr>
+          <tr><td>Gravity columns</td><td>DNA &gt;50 kb, slower</td></tr><tr><td>Agarose plug</td><td>needs single-cell suspension (ultra-long DNA)</td></tr>
+          <tr><td>Magnetic beads</td><td>easy to automate</td></tr></table>` },
+        { t: "QC numbers (DNA & RNA)", html: `
+          <table><tr><th>Measure</th><th>Good value</th><th>Low value means…</th></tr>
+          <tr><td>DNA A260/280</td><td>~1.8</td><td>protein/phenol contamination</td></tr>
+          <tr><td>DNA A260/230</td><td>2.0–2.2</td><td>EDTA, carbohydrates, phenol, guanidine HCl (absorb at 230 nm)</td></tr>
+          <tr><td>RNA A260/280</td><td>~2.0 (1.9–2.1)</td><td></td></tr>
+          <tr><td>RNA integrity number (RIN)</td><td>0 (bad) – 10 (good); &gt;6 sufficient</td><td>degraded RNA</td></tr></table>
+          <p>Quantify with <b>fluorometry</b> (Qubit, Pico/RiboGreen) rather than UV. Also check for enzyme inhibitors (haemoglobin, bile salts, EDTA, heparin). Library QC: quantity (fluorescence, qPCR, ddPCR) and size (Bioanalyzer, Femto Pulse).</p>` },
+        { t: "Amplification, fragmentation, size selection, adapters", html: `
+          <ul>
+            <li>Shotgun libraries: &gt;1 µg high-quality DNA → no amplification. Low input: PCR (targeted), <b>MDA</b> (multiple displacement, random hexamers; better for SNVs), MALBAC (better for CNV).</li>
+            <li><b>Fragmentation</b> to 200–1000 bp for Illumina/Ion; not for PacBio/ONT (but shear to 20–24 kb for PacBio HiFi, 20–40 kb for ONT). Mechanical (sonication/Covaris, Megaruptor, needle) vs enzymatic (cheap, but <b>preferential cleavage</b> bias).</li>
+            <li><b>Size selection</b>: narrow 200–700 bp for short reads; remove small fragments for long reads. Gel/BluePippin or (XP) beads.</li>
+            <li>Illumina adapter ligation: <b>end repair → A-tailing → ligate index adapter → amplification</b>. Tagmentation (Tn5) fragments and adds adapters in one step.</li>
+          </ul>` },
+        { t: "Targeted sequencing & RNA library strategies", html: `
+          <ul>
+            <li>Targeted DNA: <b>capture/WES</b>, <b>amplicons</b> (PCR, 1–100s of loci), <b>CRISPR-Cas9</b> amplification-free excision (keeps native modifications; PacBio PureTarget), ONT <b>adaptive sampling</b> (software rejects off-target molecules during sequencing; needs a BED file, GPU, ROI 300 kb–300 Mb).</li>
+            <li>Total RNA is ~80% rRNA, 1–3% poly-A+ mRNA. Strategies: <b>poly-A selection</b> (coding; oligo-dT), <b>rRNA depletion</b> (coding + non-coding), <b>small RNA</b> adapter ligation. Don't skip the DNase step. Stranded RNA-seq keeps strand information; ONT direct RNA keeps modifications.</li>
+            <li>Long reads improve detection of structural variants in gDNA and full-length isoforms in cDNA; artefacts exist (e.g. PacBio chimeric reads, basecaller errors in repeats like (CAG)n).</li>
+          </ul>` },
+        { t: "Single-cell & spatial (practical)", html: `<p>Platforms: emulsion (10x Chromium, Fluent), microwell (BD Rhapsody, Honeycomb, Singleron), combinatorial indexing (Parse, Scale). Know your cells: optimise dissociation for high viability, keep at 4 °C, work fast. Poor viability → high % mitochondrial reads and background. Spatial: Visium CytAssist (sequencing-based), Xenium (in-situ probes, 100–5000 genes, sub-cellular; cell segmentation is the challenge).</p>` },
+      ],
+    },
+  ],
+  takeHome: [
+    "Sanger = accurate validation; Illumina = cheap, high-throughput, short, quantitative standard; PacBio/Nanopore = long reads for assembly, structural variation, isoforms, modifications",
+    "Assembly is hard: short reads, errors/bias, and above all repeats (genomic architecture); long reads + Hi-C reach chromosome scale",
+    "Know contig / scaffold / coverage / N50",
+    "ChIP-seq = protein-bound DNA, ATAC-seq = open chromatin, RNA-seq = expression (≥3 replicates, normalise)",
+    "scRNA-seq resolves cell types (barcodes + UMIs) at the cost of noisier quantification; spatial adds location",
+    "Sample prep: junk in = junk out; know 260/280, 260/230 and RIN",
+  ],
+  questions: [
+    { type: "mc", q: "Sanger sequencing relies on…", options: ["chain termination by dideoxynucleotides lacking a 3′-OH", "reversible terminators imaged on a flow cell", "changes in ionic current through a pore", "pyrophosphate release detected by light"], answer: 0, src: "Deck 1, slides 13–16" },
+    { type: "mc", q: "Why are Illumina reads intrinsically short?", options: ["Clusters lose synchrony (phasing) over cycles and amplification works poorly on long fragments", "The polymerase falls off after 150 nt", "Adapters can only be ligated to short DNA", "The flow cell physically limits DNA to 150 bp"], answer: 0, src: "Deck 1, slide 28" },
+    { type: "mc", q: "A Q30 base call corresponds to an accuracy of…", options: ["99.9%", "99%", "99.99%", "97%"], answer: 0, explain: "Q = −10·log10(P_error): Q30 → P = 0.001.", src: "Deck 1, slide 29" },
+    { type: "mc", q: "Which technology detects base modifications from polymerase kinetics?", options: ["PacBio SMRT", "Illumina SBS", "Sanger", "Ion Torrent"], answer: 0, src: "Deck 1, slide 38" },
+    { type: "mc", q: "In nanopore sequencing, the base sequence is inferred from…", options: ["changes in ionic current as DNA passes through a pore", "fluorescence of labelled nucleotides", "fragment lengths in capillary electrophoresis", "pH changes during incorporation"], answer: 0, explain: "Basecalling uses neural networks.", src: "Deck 1, slides 42–46" },
+    { type: "mc", q: "You want to quantify gene expression in 24 samples at low cost. Best choice?", options: ["Illumina short reads with barcoded multiplexing", "Sanger sequencing", "PacBio HiFi", "Nanopore ultra-long reads"], answer: 0, src: "Deck 1, slides 31, 51" },
+    { type: "mc", q: "Third-generation sequencing differs from second generation mainly because it…", options: ["sequences single molecules without amplification", "uses radioactive labels", "only produces paired-end reads", "has higher per-read accuracy without consensus"], answer: 0, src: "Deck 1, slide 33" },
+    { type: "mc", q: "A scaffold is…", options: ["ordered contigs linked by long/paired reads, with gaps filled with Ns", "a single gap-free contiguous sequence", "the reference genome used for mapping", "a set of reads with identical barcodes"], answer: 0, src: "Deck 2, slide 15" },
+    { type: "mc", q: "An assembly has contigs of 40, 25, 15, 10, 5, 5 kb (total 100 kb). What is the N50?", options: ["25 kb", "40 kb", "16.7 kb", "15 kb"], answer: 0, explain: "Cumulative: 40 (40%), 65 (65%) → the 50% mark is reached within the 25 kb contig.", src: "Deck 2, slide 16" },
+    { type: "mc", q: "Which is the 'third problem' of genome assembly according to the lecture?", options: ["Genomic architecture: repeats mean local sequence lacks information on global structure", "Sequencing reads are too long", "Too much coverage", "Lack of computing power for Sanger reads"], answer: 0, src: "Deck 2, slides 20–23" },
+    { type: "mc", q: "Why do long reads help genome assembly?", options: ["They span repeats such as ~10 kb LTR retrotransposons, resolving ambiguities", "They have lower raw error rates than Illumina", "They need lower coverage for polishing", "They avoid the need for any computation"], answer: 0, src: "Deck 2, slide 29" },
+    { type: "mc", q: "Synteny refers to…", options: ["conservation of local gene order between genomes", "identical nucleotide sequences between species", "the number of chromosomes", "co-expression of genes"], answer: 0, src: "Deck 2, slide 31" },
+    { type: "mc", q: "ATAC-seq measures…", options: ["accessible (open) chromatin using a Tn5 transposase", "binding sites of one specific transcription factor via antibodies", "DNA methylation via bisulfite conversion", "translation via ribosome footprints"], answer: 0, src: "Deck 2, slides 40–43" },
+    { type: "mc", q: "ChIP-seq requires…", options: ["crosslinking and an antibody against the protein of interest", "poly-A selection", "a transposase that inserts adapters into open chromatin", "single-cell suspensions"], answer: 0, src: "Deck 2, slide 41" },
+    { type: "mc", q: "What is the minimum number of biological replicates per condition advised for differential expression?", options: ["3", "1", "2", "10"], answer: 0, src: "Deck 2, slide 52" },
+    { type: "mc", q: "In 10x single-cell RNA-seq, the UMI identifies…", options: ["individual transcript molecules", "the cell", "the sample/library", "the sequencing lane"], answer: 0, explain: "Cell barcode = cell; UMI = molecule (removes PCR duplicates).", src: "Deck 2, slide 59" },
+    { type: "mc", q: "Compared with bulk RNA-seq, single-cell RNA-seq…", options: ["reveals cell-type heterogeneity but quantifies less reliably", "gives more reliable quantification per gene", "is cheaper per sample", "does not need barcodes"], answer: 0, src: "Deck 2, slides 56–57" },
+    { type: "mc", q: "A DNA sample has A260/230 = 1.3. This suggests…", options: ["contamination with e.g. EDTA, carbohydrates, phenol or guanidine", "perfectly pure DNA", "RNA contamination only", "highly degraded DNA"], answer: 0, explain: "Pure DNA: 260/230 ≈ 2.0–2.2.", src: "Deck 3, slide 9" },
+    { type: "mc", q: "An RNA sample with RIN = 8 is…", options: ["good quality, suitable for library prep", "completely degraded", "contaminated with DNA", "unusable for any sequencing"], answer: 0, src: "Deck 3, slide 23" },
+    { type: "mc", q: "Which RNA library strategy keeps both coding and non-coding RNAs while removing the most abundant RNA species?", options: ["rRNA depletion", "Poly-A selection", "Small RNA ligation", "Oligo-dT priming"], answer: 0, src: "Deck 3, slide 24" },
+    { type: "mc", q: "Oxford Nanopore 'adaptive sampling' is…", options: ["selective sequencing of target regions decided in real time during the run", "amplicon PCR before sequencing", "Cas9 cutting of target regions", "random down-sampling of reads after sequencing"], answer: 0, src: "Deck 3, slides 42–45" },
+    { type: "mc", q: "The Illumina adapter-ligation steps in order are…", options: ["End repair → A-tailing → adapter ligation → amplification", "A-tailing → end repair → amplification → ligation", "Amplification → end repair → ligation → A-tailing", "Tagmentation → end repair → A-tailing → ligation"], answer: 0, src: "Deck 3, slide 16" },
+    { type: "open", q: "Compare Sanger, Illumina, PacBio and Oxford Nanopore on principle, read length, accuracy and best application.", answer: "Sanger: ddNTP chain termination, <900 bp, very accurate (<0.1% error), low throughput → validation/single clones. Illumina: sequencing by synthesis with reversible terminators on amplified clusters, 2×150 bp, >99.9% (Q30), terabases → quantitative (RNA-seq, resequencing). PacBio SMRT: real-time single-molecule synthesis in ZMWs, ~15–25 kb HiFi, Q30 consensus, kinetics detect modifications → assembly, SVs, isoforms. ONT: ionic current through a nanopore, 10 kb–Mbp, Q20 simplex (duplex better), real-time/portable, direct RNA & methylation → assembly, SVs, field work.", src: "Deck 1, slide 49" },
+    { type: "open", q: "Explain what N50 is, how you compute it and what it tells you about an assembly.", answer: "N50 is the length-weighted median of contig/scaffold lengths: sort fragments longest-first, sum lengths cumulatively; N50 is the length of the fragment at which 50% of the total assembly length is reached. Higher N50 = more contiguous (fewer, longer pieces). It says nothing about correctness (misassemblies can inflate it) or completeness of genes (use e.g. BUSCO).", src: "Deck 2, slide 16" },
+    { type: "open", q: "Why do repeats make genome assembly difficult and how can this be solved?", answer: "Reads shorter than a repeat cannot tell which unique flanking sequences belong together; overlaps become ambiguous, the assembly graph contains branches/loops, and the assembler either breaks contigs at repeats or collapses/misjoins them. Solutions: long reads that span the repeat (PacBio HiFi, ONT), paired-end/mate-pair reads with known insert sizes for scaffolding, Hi-C / optical maps for chromosome-scale ordering.", src: "Deck 2, slides 21–29" },
+    { type: "open", q: "Describe the differences between ChIP-seq, ATAC-seq and RNA-seq in what they capture and what biological question they answer.", answer: "ChIP-seq: crosslink protein–DNA, immunoprecipitate with antibody against a specific TF/histone mark, sequence bound DNA → where does protein X bind / where are active or repressive marks. ATAC-seq: Tn5 transposase inserts adapters into nucleosome-free, accessible DNA → which regions are open/potentially active (no antibody needed). RNA-seq: convert mRNA to cDNA and count reads per gene → which genes are expressed and how much; differential expression between conditions.", src: "Deck 2, slides 40–47" },
+    { type: "open", q: "Outline the wet-lab workflow from tissue to an Illumina-ready DNA library, including the QC checkpoints.", answer: "Extraction (phenol/columns/beads) → QC: purity by UV (260/280 ~1.8, 260/230 2.0–2.2), quantity by fluorometry (Qubit), integrity by gel/Bioanalyzer, check for inhibitors → (amplification if low input: PCR, MDA) → fragmentation to 200–1000 bp (mechanical or enzymatic) → end repair → A-tailing → ligation of indexed adapters → size selection (beads/gel) → (PCR amplification) → library QC: quantity (qPCR/fluorescence/ddPCR) and size (Bioanalyzer) → pooling and sequencing.", src: "Deck 3, slides 7–17" },
+  ],
+});
+
+</script>
+<script>GA.lecturePage("04");</script>
+</body>
+</html>

@@ -12,6 +12,8 @@ This repo holds the course material for the MSc course **Genomic Architecture** 
   4. Add a `<script>` line in `exam-drill/index.html`.
   5. Set the tile in `index.html` to `"ready"` with the folder name.
   6. Add rows to the root `README.md` tables.
+  7. Run `node tools/build-standalone.js` and commit `standalone/`.
+- **`standalone/` is generated** by `tools/build-standalone.js`: single-file copies of every study page, exam drill and hub, with CSS/JS/content inlined, for people who download one file. Don't edit it by hand. Rebuild after any change to a `study-content.js`, `assets/study.*` or `index.html`.
 - `00-course-info/` has the schedule (`schedule-2026.md`), course info and kick-off. Check the schedule for lecture titles and lecturers.
 - Lecture 03 (bacteria & HGT, 29 Oct) has no slides yet. Lectures from 3 Nov onwards still have to be added.
 - Keep the shared design (CSS tokens, light/dark themes) in `assets/study.css`. Don't inline styles per page.

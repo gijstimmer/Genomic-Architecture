@@ -16,6 +16,13 @@
   const GA = (window.GA = window.GA || {});
   GA.lectures = GA.lectures || [];
   GA.register = (lec) => GA.lectures.push(lec);
+  // Link targets. The standalone build (tools/build-standalone.js) overrides these
+  // by defining window.GA.links before this script runs.
+  const links = Object.assign({
+    hub: "../index.html",
+    drill: "../exam-drill/index.html",
+    slide: (lec, file) => "slides/" + file,
+  }, GA.links);
 
   /* ---------- small helpers ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -117,13 +124,13 @@
     document.title = `L${lec.num} ${lec.short || lec.title}`;
 
     app.append(el("nav", { class: "crumbs" },
-      `<a href="../index.html">Genomic Architecture</a><span>›</span><span>Lecture ${lec.num}</span>`));
+      `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Lecture ${lec.num}</span>`));
     app.append(el("header", { class: "top" },
       `<div class="eyebrow">Lecture ${lec.num} · ${lec.date}</div>
        <h1>${lec.titleHtml || lec.title}</h1>
        <p class="lede">${lec.summary}</p>
        <div class="meta"><span><b>Lecturer:</b> ${lec.lecturer}</span>
-       <span><b>Slides:</b> ${lec.slides.map((s) => `<a href="slides/${s}">${s}</a>`).join(", ")}</span></div>`));
+       <span><b>Slides:</b> ${lec.slides.map((s) => `<a href="${links.slide(lec, s)}">${s}</a>`).join(", ")}</span></div>`));
 
     const learn = el("div", { class: "section-wrap", style: "display:grid;gap:18px" });
     const quiz = el("div", { style: "display:grid;gap:14px" });
@@ -166,7 +173,7 @@
       const controls = el("div", { class: "tools" });
       controls.append(
         el("button", { class: "btn", onclick: () => drawQuiz(true) }, "Shuffle & restart"),
-        el("a", { class: "btn", href: "../exam-drill/index.html", style: "text-decoration:none" }, "Course-wide drill →"));
+        el("a", { class: "btn", href: links.drill, style: "text-decoration:none" }, "Course-wide drill →"));
       renderQuiz(quiz, shuffled ? shuffle(items) : items, { controls });
     };
     drawQuiz(false);
@@ -184,7 +191,7 @@
     const sel = new Set(store.get("drill:sel", lecs.map((l) => l.id)));
     let type = "all", size = 20, mode = "random";
 
-    app.append(el("nav", { class: "crumbs" }, `<a href="../index.html">Genomic Architecture</a><span>›</span><span>Exam drill</span>`));
+    app.append(el("nav", { class: "crumbs" }, `<a href="${links.hub}">Genomic Architecture</a><span>›</span><span>Exam drill</span>`));
     app.append(el("header", { class: "top" },
       `<div class="eyebrow">Course-wide practice</div><h1>Exam <em>drill</em></h1>
        <p class="lede">Mixed questions from every lecture, like the final exam (multiple choice + open questions).
